@@ -3,13 +3,18 @@ Chart.register(...registerables);
 
 let mainChart = null;
 let zChart = null;
+let v2MainChart = null;
+let v2ZChart = null;
 
 export const ChartService = {
-    init: (mainCanvasId, zCanvasId) => {
-        const mainCtx = document.getElementById(mainCanvasId).getContext('2d');
-        const zCtx = document.getElementById(zCanvasId).getContext('2d');
+    init: (mainCanvasId, zCanvasId, isV2 = false) => {
+        const mainEl = document.getElementById(mainCanvasId);
+        const zEl = document.getElementById(zCanvasId);
+        if (!mainEl || !zEl) return;
+        const mainCtx = mainEl.getContext('2d');
+        const zCtx = zEl.getContext('2d');
 
-        mainChart = new Chart(mainCtx, {
+        const chartConfig = {
             type: 'line',
             data: {
                 labels: [],
@@ -23,7 +28,7 @@ export const ChartService = {
                         tension: 0.1
                     },
                     {
-                        label: 'EWMA',
+                        label: isV2 ? 'EWMA S(t)' : 'EWMA',
                         data: [],
                         borderColor: '#38bdf8',
                         borderWidth: 2,
@@ -43,7 +48,6 @@ export const ChartService = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: { labels: { color: '#94a3b8' } }
                 },
@@ -52,9 +56,9 @@ export const ChartService = {
                     y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
                 }
             }
-        });
+        };
 
-        zChart = new Chart(zCtx, {
+        const zChartConfig = {
             type: 'line',
             data: {
                 labels: [],
@@ -72,45 +76,74 @@ export const ChartService = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
                     y: {
                         ticks: { color: '#94a3b8' },
                         grid: { color: 'rgba(255,255,255,0.05)' },
-                        min: -5,
-                        max: 5
+                        min: -5, max: 5
                     }
                 }
             }
-        });
+        };
+
+        if (isV2) {
+            zChartConfig.data.datasets.push({
+                label: 'Warning',
+                data: [],
+                borderColor: 'rgba(245, 158, 11, 0.5)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            }, {
+                label: 'Critical',
+                data: [],
+                borderColor: 'rgba(239, 68, 68, 0.5)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            });
+            v2MainChart = new Chart(mainCtx, chartConfig);
+            v2ZChart = new Chart(zCtx, zChartConfig);
+        } else {
+            mainChart = new Chart(mainCtx, chartConfig);
+            zChart = new Chart(zCtx, zChartConfig);
+        }
     },
 
-    update: (labels, raw, ewma, median, zScores, thresholds) => {
-        mainChart.data.labels = labels;
-        mainChart.data.datasets[0].data = raw;
-        mainChart.data.datasets[1].data = ewma;
-        mainChart.data.datasets[2].data = median;
-        mainChart.update('none');
+    update: (labels, raw, smoothed, median, zScores, thresholds, isV2 = false) => {
+        const main = isV2 ? v2MainChart : mainChart;
+        const z = isV2 ? v2ZChart : zChart;
 
-        zChart.data.labels = labels;
-        zChart.data.datasets[0].data = zScores;
-        // Add threshold lines dynamically if they don't exist
-        zChart.update('none');
+        if (!main || !z) return;
+
+        main.data.labels = labels;
+        main.data.datasets[0].data = raw;
+        main.data.datasets[1].data = smoothed;
+        main.data.datasets[2].data = median;
+        main.update('none');
+
+        z.data.labels = labels;
+        z.data.datasets[0].data = zScores;
+
+        if (isV2 && thresholds) {
+            z.data.datasets[1].data = thresholds.warning;
+            z.data.datasets[2].data = thresholds.critical;
+            const maxT = Math.max(...thresholds.critical, 5);
+            z.options.scales.y.max = maxT + 1;
+            z.options.scales.y.min = -(maxT + 1);
+        }
+        z.update('none');
     },
 
     clear: () => {
-        if (mainChart) {
-            mainChart.data.labels = [];
-            mainChart.data.datasets.forEach(d => d.data = []);
-            mainChart.update();
-        }
-        if (zChart) {
-            zChart.data.labels = [];
-            zChart.data.datasets.forEach(d => d.data = []);
-            zChart.update();
-        }
+        [mainChart, zChart, v2MainChart, v2ZChart].forEach(c => {
+            if (c) {
+                c.data.labels = [];
+                c.data.datasets.forEach(d => d.data = []);
+                c.update();
+            }
+        });
     }
 };

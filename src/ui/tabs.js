@@ -8,6 +8,7 @@ export const TabService = {
         const tabContents = document.querySelectorAll('.tab-content');
 
         tabBtns.forEach(btn => {
+            if (!btn.dataset.tab) return;
             btn.addEventListener('click', () => {
                 const target = btn.dataset.tab;
 

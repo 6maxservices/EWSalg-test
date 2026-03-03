@@ -4,9 +4,11 @@
 - Responsible for CSV ingestion and transformation.
 - Handles date parsing and aggregation.
 
-## Pipeline Module
-- Contains the core EWS algorithm logic.
-- Ensures no future data leakage.
+## Pipeline Module (V1)
+- Contains the core EWS algorithm logic (Original).
+
+## Pipeline Module (V2)
+- Advanced 5-layer logic: Robust Baseline, Conformal Prediction, CUSUM Drift.
 
 ## UI Module
 - Manages the DOM, events, and tab switching.

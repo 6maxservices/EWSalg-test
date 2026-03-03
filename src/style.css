@@ -92,8 +92,15 @@ main {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Glass Panels */
@@ -130,7 +137,8 @@ label {
   color: var(--text-dim);
 }
 
-input, select {
+input,
+select {
   padding: 0.75rem;
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--border-glass);
@@ -170,7 +178,8 @@ table {
   margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-glass);
@@ -194,10 +203,24 @@ tr:hover {
   font-weight: 700;
 }
 
-.alert-CRITICAL { background: var(--critical); color: white; }
-.alert-WARNING { background: var(--warning); color: black; }
-.alert-POSITIVE_SPIKE { background: var(--positive); color: white; }
-.alert-NORMAL { color: var(--text-dim); }
+.alert-CRITICAL {
+  background: var(--critical);
+  color: white;
+}
+
+.alert-WARNING {
+  background: var(--warning);
+  color: black;
+}
+
+.alert-POSITIVE_SPIKE {
+  background: var(--positive);
+  color: white;
+}
+
+.alert-NORMAL {
+  color: var(--text-dim);
+}
 
 /* Playback Bar */
 .playback-bar {
@@ -215,4 +238,118 @@ tr:hover {
 
 input[type=range] {
   width: 100%;
+}
+
+/* Hub Landing Page */
+.hub-container {
+  max-width: 1000px;
+  margin: 8rem auto;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.hub-header {
+  margin-bottom: 4rem;
+}
+
+.hub-header h1 {
+  font-size: 3rem;
+  letter-spacing: -2px;
+  margin-bottom: 1rem;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.hub-card {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.hub-card.v1::before {
+  background: var(--accent-primary);
+}
+
+.hub-card.v2::before {
+  background: var(--accent-secondary);
+}
+
+.hub-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.hub-card:hover::before {
+  opacity: 1;
+}
+
+.icon-box {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.icon-v1 {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent-primary);
+}
+
+.icon-v2 {
+  background: rgba(129, 140, 248, 0.1);
+  color: var(--accent-secondary);
+}
+
+.hub-card h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--text-main);
+}
+
+.hub-card p {
+  color: var(--text-dim);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }

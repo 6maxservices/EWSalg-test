@@ -11,8 +11,9 @@
 ## Core Components
 
 1.  **Data Engine**: Handles CSV parsing, weekly aggregation, and missing-week logic.
-2.  **Pipeline Engine**: Implements the EWS algorithm (EWMA -> Rolling Baseline -> Z-Score -> Alerting).
-3.  **Playback Controller**: Manages the temporal state (current week `t`) and handles step/play/pause/reset.
+2.  **Pipeline Engine**: Original EWS algorithm (V1).
+3.  **V2 Engine (NEW)**: Advanced 5-layer pipeline (Robust Baseline, Conformal Thresholds, CUSUM, Health Score).
+4.  **Playback Controller**: Manages temporal state (shared or independent between versions).
 4.  **UI Controller**: Orchestrates the multi-tab layout and synchronization between charts, tables, and controls.
 5.  **Validation Engine**: Calculates precision, recall, and lead-time metrics based on manual labels or event files.
 
