@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EWS Playback Lab</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="logo">
+        <h1 style="font-size: 1.5rem; letter-spacing: -1px;">EWS <span style="color: var(--accent-primary)">Playback
+            Lab</span></h1>
+      </div>
+      <div id="dataset-info" style="font-size: 0.875rem; color: var(--text-dim)">
+        No dataset loaded
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="data">Data</button>
+      <button class="tab-btn" data-tab="playback">Playback</button>
+      <button class="tab-btn" data-tab="signal-log">Signal Log</button>
+      <button class="tab-btn" data-tab="runs">Runs</button>
+      <button class="tab-btn" data-tab="validation">Validation</button>
+    </nav>
+
+    <main id="app">
+      <!-- Data Tab -->
+      <section id="data" class="tab-content active">
+        <div class="panel">
+          <h2>CSV Upload</h2>
+          <div class="grid">
+            <div class="form-group">
+              <label>Metric CSV (date, value)</label>
+              <input type="file" id="csv-upload" accept=".csv">
+            </div>
+            <div class="form-group">
+              <label>Aggregation</label>
+              <select id="agg-method">
+                <option value="SUM">SUM (Daily to Weekly)</option>
+                <option value="AVG">AVG (Daily to Weekly)</option>
+                <option value="NONE">None (Already Weekly)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Gap Handling</label>
+              <select id="gap-method">
+                <option value="KEEP">Keep Gaps (Strict)</option>
+                <option value="ZERO">Fill with 0</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="panel" id="data-preview-panel" style="display: none;">
+          <h2>Data Preview</h2>
+          <div class="table-container">
+            <table id="data-preview-table">
+              <thead>
+                <tr>
+                  <th>Week Starting</th>
+                  <th>Value</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Playback Tab -->
+      <section id="playback" class="tab-content">
+        <div class="grid">
+          <div class="panel">
+            <h2>Calibration</h2>
+            <div class="grid" style="grid-template-columns: 1fr 1fr;">
+              <div class="form-group">
+                <label>EWMA Alpha (α)</label>
+                <input type="number" id="param-alpha" value="0.3" step="0.05" min="0.01" max="1.0">
+              </div>
+              <div class="form-group">
+                <label>Window Size (Weeks)</label>
+                <input type="number" id="param-window" value="12" step="1" min="4" max="52">
+              </div>
+              <div class="form-group">
+                <label>Warning (Z)</label>
+                <input type="number" id="param-warn" value="-1.2" step="0.1">
+              </div>
+              <div class="form-group">
+                <label>Critical (Z)</label>
+                <input type="number" id="param-crit" value="-2.5" step="0.1">
+              </div>
+              <div class="form-group">
+                <label>Consecutive for Freeze (N)</label>
+                <input type="number" id="param-freeze-n" value="3" step="1" min="2">
+              </div>
+              <div class="form-group">
+                <label>Warmup Weeks</label>
+                <input type="number" id="param-warmup" value="8" step="1" min="4">
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Playback Navigation</h2>
+            <div class="slider-container" style="margin-top: 2rem;">
+              <input type="range" id="playback-slider" value="0" min="0" max="100">
+              <div
+                style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">
+                <span id="start-date">-</span>
+                <span id="current-date">Select a Point</span>
+                <span id="end-date">-</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+              <button class="btn-primary" id="btn-step">Step Forward</button>
+              <button class="btn-primary" id="btn-play">Play</button>
+              <button class="btn-primary" id="btn-reset" style="background: rgba(255,255,255,0.1)">Reset</button>
+              <button class="btn-primary" id="btn-save-run"
+                style="margin-left: auto; background: var(--accent-secondary)">Save Run</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Visualizations</h2>
+          <div style="height: 300px; margin-bottom: 2rem;">
+            <canvas id="chart-main"></canvas>
+          </div>
+          <div style="height: 200px;">
+            <canvas id="chart-zscore"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signal Log Tab -->
+      <section id="signal-log" class="tab-content">
+        <div class="panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Signal Log</h2>
+            <button class="btn-primary" id="btn-export-log">Export CSV</button>
+          </div>
+          <div class="table-container">
+            <table id="signal-log-table">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Raw</th>
+                  <th>EWMA</th>
+                  <th>Median</th>
+                  <th>MAD</th>
+                  <th>Win Start</th>
+                  <th>Win End</th>
+                  <th>Z-Score</th>
+                  <th>Alert</th>
+                  <th>Frozen</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Runs Tab -->
+      <section id="runs" class="tab-content">
+        <div class="panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2>Saved Runs</h2>
+            <div style="display: flex; gap: 1rem;">
+              <button class="btn-primary" id="btn-export-runs">Export JSON</button>
+              <button class="btn-primary" id="btn-import-runs">Import JSON</button>
+            </div>
+          </div>
+          <div id="runs-list">
+            <!-- Run items will be injected here -->
+          </div>
+        </div>
+        <div class="panel" id="comparison-panel" style="display: none;">
+          <h2>Run Comparison</h2>
+          <div class="grid" id="comparison-results"></div>
+        </div>
+      </section>
+
+      <!-- Validation Tab -->
+      <section id="validation" class="tab-content">
+        <div class="grid">
+          <div class="panel">
+            <h2>Events Upload</h2>
+            <div class="form-group">
+              <label>Events CSV (event_date, event_type, notes)</label>
+              <input type="file" id="events-upload" accept=".csv">
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Performance Metrics</h2>
+            <div class="grid" id="metrics-grid">
+              <div class="form-group">
+                <label>Precision</label>
+                <div id="metric-precision" style="font-size: 2rem; font-weight: bold;">-</div>
+              </div>
+              <div class="form-group">
+                <label>Recall</label>
+                <div id="metric-recall" style="font-size: 2rem; font-weight: bold;">-</div>
+              </div>
+              <div class="form-group">
+                <label>Avg Lead Time</label>
+                <div id="metric-lead" style="font-size: 2rem; font-weight: bold;">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modals or Overlays if needed -->
+  <div id="toast"
+    style="position: fixed; bottom: 2rem; right: 2rem; background: var(--accent-primary); color: white; padding: 1rem 2rem; border-radius: 8px; display: none; z-index: 1000;">
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
