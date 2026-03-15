@@ -39,3 +39,13 @@ As per your request, the logic has been updated:
 - **Formula**: `Total Weeks / 20` (Capped at 100%).
 - It reaches **100%** once you have **20 weeks** of non-gap data.
 - 20 weeks is the industry standard for establishing a statistically significant baseline.
+
+---
+
+## 4. Interactive Logic Validator
+
+The **Docs Tab** contains a live validator that allows for manual verification of any data sequence.
+
+*   **Baseline Logic**: The validator ignores the last data point in your string to build a historical baseline, then evaluates the last point against it.
+*   **Step-by-Step Audit**: It breaks down the math (Median -> MAD -> Deviation -> Z-Score) so you can compare the machine logic against a manual calculator if desired.
+*   **Weekly Scaling**: It uses the same scaling logic as the main engine, ensuring that "Confidence" correctly reflects the depth of your data input.

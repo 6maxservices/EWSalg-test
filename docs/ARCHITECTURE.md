@@ -21,6 +21,7 @@
 4.  **Playback Controller**: Manages temporal state (shared or independent between versions).
 4.  **UI Controller**: Orchestrates the multi-tab layout and synchronization between charts, tables, and controls.
 5.  **Validation Engine**: Calculates precision, recall, and lead-time metrics based on manual labels or event files.
+6.  **Docs Tab & Interactive Validator**: A built-in documentation module that provides real-time logic verification and a mathematical sandbox for testing calculations against manual data entries.
 
 ## Workflow
 
