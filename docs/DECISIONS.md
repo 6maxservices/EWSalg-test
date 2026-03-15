@@ -27,3 +27,9 @@
 
 - **Decision**: Add JSON Export/Import buttons for the Saved Runs.
 - **Reasoning**: Overcomes LocalStorage limitations and allows sharing results.
+
+## [2026-03-03] Conformal Prediction in V2
+
+- **Decision**: Use Conformal Prediction for adaptive thresholds in V2.
+- **Rationale**: Standard Z-scores assume data follows a perfect bell curve (normal distribution). Conformal Prediction is "distribution-free"—it looks at the actual historical errors to decide the range, making it far more accurate for messy real-world data.
+- **Outcome**: It predicts the "safe range" for the current week instead of using static multipliers.

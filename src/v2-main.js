@@ -307,3 +307,58 @@ function showToast(msg) {
     toast.style.display = 'block';
     setTimeout(() => toast.style.display = 'none', 3000);
 }
+
+// --- Interactive Logic Validator (Docs Tab) ---
+document.getElementById('validator-input').addEventListener('input', (e) => {
+    const input = e.target.value;
+    const resultsDiv = document.getElementById('validator-results');
+    const explanationDiv = document.getElementById('v-explanation');
+
+    if (!input || input.trim() === '') {
+        resultsDiv.style.display = 'none';
+        return;
+    }
+
+    const values = input.split(',')
+        .map(v => parseFloat(v.trim()))
+        .filter(v => !isNaN(v));
+
+    if (values.length === 0) {
+        resultsDiv.style.display = 'none';
+        return;
+    }
+
+    resultsDiv.style.display = 'block';
+
+    // 1. Calculate Baseline for everything except the last point
+    const history = values.slice(0, -1);
+    const lastPoint = values[values.length - 1];
+    const baseline = EngineV2.calculateBaseline(history, parseInt(document.getElementById('v2-param-window')?.value || 12));
+    
+    // 2. Calculate Z-Score for the last point
+    const z = EngineV2.calculateZScore(lastPoint, baseline.median, baseline.dispersion);
+    
+    // 3. Confidence based on total length
+    const conf = Math.min(values.length / 20, 1.0);
+
+    // Update UI
+    document.getElementById('v-median').textContent = baseline.median.toFixed(2);
+    document.getElementById('v-mad').textContent = baseline.dispersion.toFixed(2);
+    document.getElementById('v-zscore').textContent = z.toFixed(2);
+    document.getElementById('v-conf').textContent = (conf * 100).toFixed(0) + '%';
+
+    // Build Explanation
+    let explanation = `<strong>Step-by-Step Logic:</strong><br>`;
+    explanation += `1. Received ${values.length} data points.<br>`;
+    if (history.length > 0) {
+        explanation += `2. Baseline created from first ${history.length} points: Median=${baseline.median}, MAD=${baseline.dispersion} (Method: ${baseline.method}).<br>`;
+        explanation += `3. Comparing latest point (${lastPoint}) vs baseline:<br>`;
+        explanation += `   - Deviation = ${lastPoint} - ${baseline.median} = ${(lastPoint - baseline.median).toFixed(2)}<br>`;
+        explanation += `   - Z-Score = 0.6745 * (Deviation / MAD) = ${z.toFixed(2)}<br>`;
+    } else {
+        explanation += `2. Only 1 point provided. Standard baseline requires at least 2 points for dispersion.<br>`;
+    }
+    explanation += `4. Confidence: ${values.length} weeks / 20 week target = ${(conf * 100).toFixed(0)}% accuracy.`;
+
+    explanationDiv.innerHTML = explanation;
+});

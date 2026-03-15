@@ -58,7 +58,8 @@ export const EngineV2 = {
             method = 'CONST';
         }
 
-        const confidence = Math.min(n / 20, 1.0);
+        const totalN = rawHistory.filter(v => v !== null).length;
+        const confidence = Math.min(totalN / 20, 1.0);
 
         return { median, dispersion, method, n, confidence };
     },

@@ -12,7 +12,12 @@
 
 1.  **Data Engine**: Handles CSV parsing, weekly aggregation, and missing-week logic.
 2.  **Pipeline Engine**: Original EWS algorithm (V1).
-3.  **V2 Engine (NEW)**: Advanced 5-layer pipeline (Robust Baseline, Conformal Thresholds, CUSUM, Health Score).
+3.  **V2 Engine (Advanced)**: A 5-layer pipeline designed for high sensitivity and low false alarms:
+    - **Layer 1: Robust Baseline**: Calculates the "normal" state using Median and falling back to IQR or Range if the data is flat (MAD=0).
+    - **Layer 2: Point Anomaly**: Applies EWMA smoothing to the *incoming* value to filter out single-week noise.
+    - **Layer 3: CUSUM (Drift)**: Detects "slow leaks" by accumulating small deviations that wouldn't trigger a standard alert.
+    - **Layer 4: Conformal Thresholds**: Adaptive boundaries that learn from historical "noise" to tighten or loosen sensitivity automatically.
+    - **Layer 5: Health Score**: A 0-100% metric representing the overall stability of the series.
 4.  **Playback Controller**: Manages temporal state (shared or independent between versions).
 4.  **UI Controller**: Orchestrates the multi-tab layout and synchronization between charts, tables, and controls.
 5.  **Validation Engine**: Calculates precision, recall, and lead-time metrics based on manual labels or event files.
