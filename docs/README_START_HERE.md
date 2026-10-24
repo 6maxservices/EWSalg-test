@@ -15,8 +15,15 @@ This lab allows users to upload a time series, smoothing it via EWMA, and playba
 
 ## Documentation Index
 
-- [ARCHITECTURE.md](file:///c:/dev/EWSalg%20test/docs/ARCHITECTURE.md) - System design and technical stack.
-- [DECISIONS.md](file:///c:/dev/EWSalg%20test/docs/DECISIONS.md) - Record of architectural and product decisions.
-- [MODULES.md](file:///c:/dev/EWSalg%20test/docs/MODULES.md) - Overview of system modules.
-- [MODULE_PLAYBOOK.md](file:///c:/dev/EWSalg%20test/docs/MODULE_PLAYBOOK.md) - Standards for creating and maintaining modules.
-- [CHANGELOG.md](file:///c:/dev/EWSalg%20test/docs/CHANGELOG.md) - Record of changes and versioning.
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Application and security architecture.
+- [SECURITY_IMPLEMENTATION.md](SECURITY_IMPLEMENTATION.md) - WP1-WP8 readiness and activation boundary.
+- [POD_RUNBOOK.md](POD_RUNBOOK.md) - Connect and inspect the existing pod.
+- [BACKUP_RUNBOOK.md](BACKUP_RUNBOOK.md) - Git hooks, encrypted backups, and restore tests.
+- [NETWORK_GUARD.md](NETWORK_GUARD.md) - Reversible Windows egress guard.
+- [SUPPLY_CHAIN.md](SUPPLY_CHAIN.md) - Package, extension, and model pins.
+- [INCIDENT_PLAYBOOK.md](INCIDENT_PLAYBOOK.md) - Four incident scenarios and monthly drills.
+- [SIGNED_COMMITS.md](SIGNED_COMMITS.md) - Human-owned signing setup.
+- [DECISIONS.md](DECISIONS.md) - Record of architectural and product decisions.
+- [MODULES.md](MODULES.md) - Overview of system modules.
+- [MODULE_PLAYBOOK.md](MODULE_PLAYBOOK.md) - Standards for creating and maintaining modules.
+- [CHANGELOG.md](CHANGELOG.md) - Record of changes and versioning.

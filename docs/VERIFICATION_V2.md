@@ -39,3 +39,29 @@ A standalone verification script was executed on **March 15, 2026**, running the
 ## 3. Conclusion
 
 The `EngineV2` implementation is mathematically sound and follows the design specifications. The Confidence calculation correctly identifies the depth of historical data and reaches 100% after 20 weeks of valid data.
+
+---
+
+## 4. Automated Verification Harness (2026-08-20)
+
+The previous proof script has been replaced by a repeatable harness under
+`verification/` and automated tests under `tests/js/`.
+
+The generator uses an explicit seed and known weekly effects. The suite checks:
+
+- a controlled negative anomaly is detected at its known index;
+- stable data stays below the configured false-positive tolerance;
+- gaps remain explicit and do not poison EWMA/CUSUM state;
+- NaN, Infinity, and an extreme finite value do not produce non-finite engine
+  results;
+- a result prefix is identical whether or not future weeks are present;
+- a simple rolling mean/standard-deviation implementation provides an
+  independent baseline comparison.
+
+Run `npm test` for unit tests and `npm run verify` for a JSON scenario report in
+the ignored `var/verification/` directory. `make verify` also runs all Python
+security-tool tests when GNU Make and Python are available.
+
+The harness is parameterized project verification, not a claim that one set of
+synthetic cases validates every real deployment. Add owner-approved scenarios
+and tolerances before changing alert thresholds or merging future core logic.

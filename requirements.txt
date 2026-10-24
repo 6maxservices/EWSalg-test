@@ -1,0 +1,2 @@
+# Runtime Python tooling intentionally uses only the standard library.
+# This file is valid with: python -m pip install --require-hashes -r requirements.txt

@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+python -m tools.check_staged
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "BLOCK: pinned gitleaks binary is unavailable."
+  exit 2
+fi
+
+required_version="$(node -e "const c=require('./config/tool-versions.json'); process.stdout.write(c.gitleaks)")"
+actual_version="$(gitleaks version 2>/dev/null | tr -d 'v\r\n ')"
+if [ "$actual_version" != "$required_version" ]; then
+  echo "BLOCK: gitleaks version mismatch (required $required_version)."
+  exit 2
+fi
+
+gitleaks git --pre-commit --redact --staged --verbose

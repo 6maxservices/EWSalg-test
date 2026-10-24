@@ -1,0 +1,4 @@
+# Copy this file to config/blocklist.txt and replace every example locally.
+# One Python regular expression per line. Never commit the real file.
+YOUR_PRIVATE_PROJECT_TERM
+YOUR_SENSITIVE_MODULE_NAME

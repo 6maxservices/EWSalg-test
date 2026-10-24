@@ -8,9 +8,12 @@ export const Engine = {
      * Compute EWMA for the series. Skips gaps.
      */
     computeEWMA: (series, alpha) => {
+        if (!Number.isFinite(alpha) || alpha <= 0 || alpha > 1) {
+            throw new RangeError('alpha must be in the interval (0, 1]');
+        }
         let s = null;
         return series.map(point => {
-            if (point.value === null) return { ...point, ewma: null };
+            if (!Number.isFinite(point.value)) return { ...point, ewma: null };
 
             if (s === null) {
                 s = point.value;
@@ -31,7 +34,7 @@ export const Engine = {
 
         let i = currentTIdx - 1;
         while (i >= 0 && window.length < windowSize) {
-            if (series[i].ewma !== null) {
+            if (Number.isFinite(series[i].ewma)) {
                 window.push(series[i].ewma);
                 if (!bounds.end) bounds.end = series[i].date;
                 bounds.start = series[i].date;
@@ -60,7 +63,7 @@ export const Engine = {
      * Modified Z-score calculation.
      */
     calculateZScore: (value, median, mad) => {
-        if (value === null || median === null || mad === null || mad === 0) return 0;
+        if (!Number.isFinite(value) || !Number.isFinite(median) || !Number.isFinite(mad) || mad <= 0) return 0;
         return 0.6745 * (value - median) / mad;
     },
 
@@ -68,9 +71,13 @@ export const Engine = {
      * Classify alert level based on Z-score and thresholds.
      */
     classify: (z, thresholds) => {
-        if (z <= thresholds.critical) return 'CRITICAL';
-        if (z <= thresholds.warning) return 'WARNING';
-        if (z >= thresholds.positiveSpike) return 'POSITIVE_SPIKE';
+        if (!Number.isFinite(z)) return 'NORMAL';
+        const critical = Number.isFinite(thresholds?.critical) ? thresholds.critical : -2.5;
+        const warning = Number.isFinite(thresholds?.warning) ? thresholds.warning : -1.2;
+        const positiveSpike = Number.isFinite(thresholds?.positiveSpike) ? thresholds.positiveSpike : 2.5;
+        if (z <= critical) return 'CRITICAL';
+        if (z <= warning) return 'WARNING';
+        if (z >= positiveSpike) return 'POSITIVE_SPIKE';
         return 'NORMAL';
     },
 
@@ -80,11 +87,16 @@ export const Engine = {
      * frozen = false if z > warning_threshold.
      */
     updateFreezeState: (z, previousConsecutiveLow, nThreshold, warningThreshold) => {
+        if (!Number.isFinite(z) || !Number.isFinite(warningThreshold)) {
+            return { consecutiveLow: 0, frozen: false };
+        }
+        const prior = Number.isInteger(previousConsecutiveLow) && previousConsecutiveLow >= 0 ? previousConsecutiveLow : 0;
+        const threshold = Number.isInteger(nThreshold) && nThreshold > 0 ? nThreshold : 1;
         if (z <= warningThreshold) {
-            const consecutive = previousConsecutiveLow + 1;
+            const consecutive = prior + 1;
             return {
                 consecutiveLow: consecutive,
-                frozen: consecutive >= nThreshold
+                frozen: consecutive >= threshold
             };
         } else {
             return {

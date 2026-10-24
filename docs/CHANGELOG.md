@@ -1,4 +1,44 @@
-# Final Update - Implementation Complete
+# Changelog
+
+## [Unreleased] - 2026-08-20
+
+### Added
+
+- WP1 local OpenAI-compatible gateway with existing-RunPod private routes,
+  default-deny public routes, `X-Origin`, DLP, aliases, cost-aware private
+  routing, and a metadata-only SQLite query log.
+- WP2 report sanitizer for JSON/SARIF/text audit output with stable local path
+  aliases, code/literal removal, atomic writes, and a final fail-closed scan.
+- WP3 pod image/container hygiene inspection and existing-endpoint runbook; no
+  pod was created or changed.
+- WP4 staged secret/blocklist guard, pinned-gitleaks hook, restic backup/restore
+  scripts, cloud-sync detection, and BitLocker status check.
+- WP5 reproducible EWS verification harness, reference baseline comparison,
+  `make verify`, and JavaScript tests for known anomalies, false positives,
+  gaps, extreme values, and no future leakage.
+- WP6 hash-chained evidence CLI, as-of reports, signed-commit guidance, and
+  counsel-owned NDA/IP-assignment field checklists.
+- WP7 reversible Windows egress scripts, tool-version pins, empty hashed-runtime
+  requirements, Cline version check, model-weight SHA manifest, and untrusted
+  external-content rules.
+- WP8 incident playbook, safe monthly drill with SKIP-as-FAIL semantics,
+  evidence recording, and Task Scheduler helper.
+- Root README and security, pod, network, backup, supply-chain, and signing docs.
+
+### Changed
+
+- Both EWS engines and CSV ingestion now reject or safely handle NaN and Infinity.
+- Project documentation uses repository-relative links and distinguishes code
+  readiness from owner-required live activation.
+
+### Verification
+
+- 21 Python standard-library tests and 8 Node tests pass locally.
+- Live pod, provider, firewall, backup/restore, gitleaks, Cline pin, and full
+  drill acceptance remain explicit owner-run checks because they change or
+  depend on external state.
+
+# Historical final update
 
 The EWS Playback Lab is now fully functional and reflects all requested adjustments.
 

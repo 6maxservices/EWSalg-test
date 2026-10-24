@@ -11,6 +11,20 @@ node_modules
 dist
 dist-ssr
 *.local
+__pycache__/
+*.py[cod]
+.venv/
+.env
+config/blocklist.txt
+config/aliases.json
+config/library_categories.json
+var/
+evidence/*.jsonl
+evidence/*.lock
+*.sqlite
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
 
 # Editor directories and files
 .vscode/*

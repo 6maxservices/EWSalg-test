@@ -9,7 +9,10 @@ export const EngineV2 = {
      * Calculates median and dispersion using a fallback chain.
      */
     calculateBaseline: (rawHistory, windowSize) => {
-        const window = rawHistory.filter(v => v !== null).slice(-windowSize);
+        if (!Array.isArray(rawHistory)) throw new TypeError('rawHistory must be an array');
+        if (!Number.isInteger(windowSize) || windowSize <= 0) throw new RangeError('windowSize must be a positive integer');
+        const finiteHistory = rawHistory.filter(Number.isFinite);
+        const window = finiteHistory.slice(-windowSize);
         const n = window.length;
 
         if (n === 0) {
@@ -58,7 +61,7 @@ export const EngineV2 = {
             method = 'CONST';
         }
 
-        const totalN = rawHistory.filter(v => v !== null).length;
+        const totalN = finiteHistory.length;
         const confidence = Math.min(totalN / 20, 1.0);
 
         return { median, dispersion, method, n, confidence };
@@ -69,24 +72,31 @@ export const EngineV2 = {
      * Maintains state S_t = alpha * X_t + (1 - alpha) * S_{t-1}
      */
     updateEWMA: (currentX, previousS, alpha) => {
-        if (previousS === null) return currentX;
+        if (!Number.isFinite(alpha) || alpha <= 0 || alpha > 1) {
+            throw new RangeError('alpha must be in the interval (0, 1]');
+        }
+        if (!Number.isFinite(currentX)) return Number.isFinite(previousS) ? previousS : null;
+        if (!Number.isFinite(previousS)) return currentX;
         return alpha * currentX + (1 - alpha) * previousS;
     },
 
     calculateZScore: (sVal, median, dispersion) => {
-        if (dispersion === 0 || median === null) return 0;
+        if (!Number.isFinite(sVal) || !Number.isFinite(median) || !Number.isFinite(dispersion) || dispersion <= 0) return 0;
         return 0.6745 * (sVal - median) / dispersion;
     },
 
     classifyAlert: (z, thresholds, polarity) => {
+        if (!Number.isFinite(z)) return 'NORMAL';
         let absZ = Math.abs(z);
+        const warning = Number.isFinite(thresholds?.warning) && thresholds.warning > 0 ? thresholds.warning : 1.2;
+        const critical = Number.isFinite(thresholds?.critical) && thresholds.critical > 0 ? thresholds.critical : 2.5;
 
         // Polarity filtering
         if (polarity === 'negative' && z > 0) return 'NORMAL';
         if (polarity === 'positive' && z < 0) return 'NORMAL';
 
-        if (absZ >= thresholds.critical) return 'CRITICAL';
-        if (absZ >= thresholds.warning) return 'WARNING';
+        if (absZ >= critical) return 'CRITICAL';
+        if (absZ >= warning) return 'WARNING';
         return 'NORMAL';
     },
 
@@ -94,16 +104,21 @@ export const EngineV2 = {
      * Layer 3: CUSUM Drift Detection
      */
     updateCUSUM: (z, state, k, h) => {
-        const s_pos = Math.max(0, state.s_pos + z - k);
-        const s_neg = Math.max(0, state.s_neg - z - k);
+        const safeZ = Number.isFinite(z) ? z : 0;
+        const safeK = Number.isFinite(k) && k >= 0 ? k : 0;
+        const safeH = Number.isFinite(h) && h >= 0 ? h : Infinity;
+        const previousPositive = Number.isFinite(state?.s_pos) ? state.s_pos : 0;
+        const previousNegative = Number.isFinite(state?.s_neg) ? state.s_neg : 0;
+        const s_pos = Math.max(0, previousPositive + safeZ - safeK);
+        const s_neg = Math.max(0, previousNegative - safeZ - safeK);
 
         let drift = false;
         let direction = null;
 
-        if (s_neg > h) {
+        if (s_neg > safeH) {
             drift = true;
             direction = 'DECLINING';
-        } else if (s_pos > h) {
+        } else if (s_pos > safeH) {
             drift = true;
             direction = 'INCREASING';
         }
@@ -115,7 +130,10 @@ export const EngineV2 = {
      * Layer 4: Conformal Thresholds (Adaptive)
      */
     calculateConformalThresholds: (residuals, alpha_warn, alpha_crit) => {
-        if (residuals.length < 8) {
+        const finiteResiduals = Array.isArray(residuals)
+            ? residuals.filter(value => Number.isFinite(value) && value >= 0)
+            : [];
+        if (finiteResiduals.length < 8) {
             return {
                 warning: 1.2,
                 critical: 2.5,
@@ -123,7 +141,9 @@ export const EngineV2 = {
             };
         }
 
-        const sortedR = [...residuals].sort((a, b) => a - b);
+        const safeAlphaWarn = Number.isFinite(alpha_warn) && alpha_warn > 0 && alpha_warn < 1 ? alpha_warn : 0.1;
+        const safeAlphaCrit = Number.isFinite(alpha_crit) && alpha_crit > 0 && alpha_crit < 1 ? alpha_crit : 0.02;
+        const sortedR = [...finiteResiduals].sort((a, b) => a - b);
         const n = sortedR.length;
 
         const getPercentile = (p) => {
@@ -131,8 +151,8 @@ export const EngineV2 = {
             return sortedR[Math.min(idx, n - 1)];
         };
 
-        let warning = getPercentile(1 - alpha_warn);
-        let critical = getPercentile(1 - alpha_crit);
+        let warning = getPercentile(1 - safeAlphaWarn);
+        let critical = getPercentile(1 - safeAlphaCrit);
 
         // Safety Floors
         warning = Math.max(warning, 0.8);
@@ -147,7 +167,7 @@ export const EngineV2 = {
     calculateHealth: (z, alert) => {
         if (alert === 'NORMAL') return { score: 1.0, status: 'HEALTHY' };
 
-        const severity = Math.min(Math.abs(z) / 3, 1.0);
+        const severity = Number.isFinite(z) ? Math.min(Math.abs(z) / 3, 1.0) : 1.0;
         const health = 1.0 - severity;
 
         let status = 'HEALTHY';

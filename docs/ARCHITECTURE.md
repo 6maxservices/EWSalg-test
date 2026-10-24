@@ -23,6 +23,23 @@
 5.  **Validation Engine**: Calculates precision, recall, and lead-time metrics based on manual labels or event files.
 6.  **Docs Tab & Interactive Validator**: A built-in documentation module that provides real-time logic verification and a mathematical sandbox for testing calculations against manual data entries.
 
+## Security Boundary
+
+The browser application remains local. Optional LLM access is isolated behind
+`security_gateway`, bound to `127.0.0.1:4000`:
+
+1. `private-fast`, `private-core`, and `private-auto` forward to the existing
+   RunPod OpenAI-compatible endpoint.
+2. `public-gpt` and `public-claude` are default-deny. They require an allowlisted
+   `X-Origin`, an existing owner-maintained blocklist, and a clean DLP scan.
+3. The sanitizer removes code/literals and maps paths before any public request.
+4. Query metadata is stored locally without prompt bodies.
+5. Git/backup/network/pod controls are separate scripts so high-impact machine
+   changes remain explicit and reversible.
+
+The public GitHub repository is the shared surface. Private future core code and
+the real policy files belong in a local-only or self-hosted repository.
+
 ## Workflow
 
 1.  **Upload**: User provides CSV data.

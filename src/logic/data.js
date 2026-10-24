@@ -20,7 +20,7 @@ export const DataService = {
         obj[header] = values[i]?.trim();
       });
       return obj;
-    }).filter(row => row.date && !isNaN(parseFloat(row.value)));
+    }).filter(row => row.date && Number.isFinite(parseFloat(row.value)));
   },
 
   /**
@@ -33,6 +33,8 @@ export const DataService = {
     const weeklyMap = {};
 
     data.forEach(row => {
+      const numericValue = parseFloat(row.value);
+      if (!Number.isFinite(numericValue)) return;
       const date = new Date(row.date);
       if (isNaN(date)) return;
 
@@ -45,7 +47,7 @@ export const DataService = {
       if (!weeklyMap[dateStr]) {
         weeklyMap[dateStr] = { sum: 0, count: 0 };
       }
-      weeklyMap[dateStr].sum += parseFloat(row.value);
+      weeklyMap[dateStr].sum += numericValue;
       weeklyMap[dateStr].count += 1;
     });
 
